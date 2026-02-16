@@ -11,11 +11,12 @@
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         
-        /* High z-index to ensure search results appear over everything */
+        /* This ensures the dropdown stays on top of other content */
         #search-results {
-            max-height: 300px;
+            max-height: 350px;
             overflow-y: auto;
             z-index: 9999;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
         .overlap-badge { 
             font-size: 8px; 
@@ -57,8 +58,8 @@
                         <input 
                             type="text" id="fund-search"
                             autocomplete="off"
-                            placeholder="Search ETF (VOO, QQQ, VTI...)"
-                            class="w-full bg-slate-100 border-none rounded-xl pl-4 pr-12 py-4 focus:ring-2 focus:ring-indigo-500 transition-all outline-none text-lg font-medium shadow-inner"
+                            placeholder="Type a ticker (e.g., VOO, AAPL...)"
+                            class="w-full bg-slate-100 border-none rounded-2xl pl-4 pr-12 py-4 focus:ring-2 focus:ring-indigo-500 transition-all outline-none text-lg font-medium shadow-inner"
                         >
                         <div id="search-spinner" class="hidden absolute right-4 top-1/2 -translate-y-1/2">
                             <i data-lucide="refresh-cw" class="w-5 h-5 text-indigo-500 animate-spin"></i>
@@ -66,18 +67,17 @@
                     </div>
                     
                     <!-- Search Results Dropdown -->
-                    <div id="search-results" class="hidden absolute w-full left-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden">
-                        <!-- Results injected here -->
+                    <div id="search-results" class="hidden absolute w-full left-0 mt-2 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xl">
+                        <!-- Results are injected here by JS -->
                     </div>
                 </div>
 
-                <!-- Active Funds List -->
                 <div id="funds-container" class="mt-6 space-y-3"></div>
             </section>
 
-            <!-- Dashboard Content -->
+            <!-- Dashboard -->
             <div id="dashboard" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in duration-700">
-                <div class="bg-indigo-600 p-6 rounded-3xl text-white shadow-xl shadow-indigo-100">
+                <div class="bg-indigo-600 p-6 rounded-3xl text-white shadow-xl">
                     <h3 class="text-[10px] font-black uppercase tracking-widest opacity-70 mb-2">Diversification Score</h3>
                     <div class="flex items-baseline gap-1">
                         <span id="score-value" class="text-5xl font-black">0</span>
@@ -91,19 +91,18 @@
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
                     <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Unique Stocks</h3>
                     <div id="unique-count" class="text-4xl font-black text-slate-800">0</div>
-                    <p class="text-slate-400 text-[10px] mt-1 font-bold">INDEPENDENT HOLDINGS</p>
+                    <p class="text-slate-400 text-[10px] mt-1 font-bold italic uppercase">Independent holdings</p>
                 </div>
 
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
-                    <h3 class="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-2">Portfolio Overlap</h3>
+                    <h3 class="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-2">Overlap Hits</h3>
                     <div id="overlap-count" class="text-4xl font-black text-amber-500">0</div>
-                    <p class="text-slate-400 text-[10px] mt-1 font-bold uppercase tracking-tighter">Shared across funds</p>
+                    <p class="text-slate-400 text-[10px] mt-1 font-bold italic uppercase">Stocks in multiple funds</p>
                 </div>
 
-                <!-- Detailed Table -->
                 <div class="md:col-span-3 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="px-6 py-4 border-b bg-slate-50/50 flex justify-between items-center">
-                        <h3 class="font-bold text-slate-700">Individual Stock Exposure</h3>
+                    <div class="px-6 py-4 border-b bg-slate-50/50">
+                        <h3 class="font-bold text-slate-700 text-sm">Individual Stock Exposure</h3>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
@@ -113,21 +112,20 @@
                 </div>
             </div>
 
-            <!-- Empty State -->
             <div id="empty-state" class="text-center py-20 text-slate-300">
                 <i data-lucide="pie-chart" class="w-16 h-16 mx-auto mb-4 opacity-10"></i>
-                <p class="text-sm font-bold uppercase tracking-widest">Search a fund to begin</p>
+                <p class="text-sm font-bold">Add index funds to analyze your actual exposure.</p>
             </div>
         </main>
     </div>
 
-    <!-- Unified JavaScript Logic -->
+    <!-- COMBINED SCRIPT: Logic + Keys in One Place -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 1. David's Firebase Configuration
+        // 1. DAVID'S FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyCVJT2MkJQ7SIYSg6mw5XHFyOFgDEHSuIM",
             authDomain: "stock-overlap-analysis.firebaseapp.com",
@@ -137,33 +135,33 @@
             appId: "1:995701839502:web:d27ce6e5520f4693671bdf"
         };
 
-        // 2. David's Financial API Key
-        const apiKey = "GwzlWCQ6lm5a6N6aHgAViWJYT2KN4ZNU"; 
+        // 2. DAVID'S FINANCIAL API KEY
+        const fmpApiKey = "GwzlWCQ6lm5a6N6aHgAViWJYT2KN4ZNU"; 
         const FMP_URL = "https://financialmodelingprep.com/api/v3";
 
         // Internal State
         const state = { funds: [], userId: null, appId: 'overlap-live-v1' };
 
-        // Initialize Everything
         async function init() {
             lucide.createIcons();
             
             try {
+                // Initialize Firebase with the REAL config
                 const app = initializeApp(firebaseConfig);
                 const auth = getAuth(app);
                 const db = getFirestore(app);
 
-                // Setup Auth
+                // Authentication
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         state.userId = user.uid;
                         listenToPortfolio(db);
                     } else {
-                        signInAnonymously(auth).catch(e => console.error("Auth failed:", e));
+                        signInAnonymously(auth).catch(e => console.error("Firebase Login Error:", e));
                     }
                 });
 
-                // Setup Search Logic
+                // Set up Search
                 const searchInput = document.getElementById('fund-search');
                 searchInput.addEventListener('input', debounce((e) => handleSearch(e.target.value), 300));
                 
@@ -174,27 +172,27 @@
                     }
                 });
 
-                // Expose global functions for buttons
-                window.addFund = async (symbol, name) => {
+                // Attach global functions to window so the HTML buttons can see them
+                window.triggerAddFund = async (symbol, name) => {
                     document.getElementById('fund-search').value = '';
                     document.getElementById('search-results').classList.add('hidden');
                     
                     let holdings = [];
                     try {
-                        const res = await fetch(`${FMP_URL}/etf-holder/${symbol}?apikey=${apiKey}`);
+                        const res = await fetch(`${FMP_URL}/etf-holder/${symbol}?apikey=${fmpApiKey}`);
                         holdings = await res.json();
-                        // If API returns an error or empty list, use local fallbacks
-                        if (!Array.isArray(holdings)) holdings = [];
-                    } catch (e) { console.error(e); }
+                    } catch (e) {
+                        console.error("API Error:", e);
+                    }
 
-                    // Smart Fallbacks for major tickers
-                    if (holdings.length === 0) {
-                        const major = {
+                    // Fallback data if API is busy or free limit reached
+                    if (!Array.isArray(holdings) || holdings.length === 0) {
+                        const standard = {
                             'VOO': [{asset:'AAPL',name:'Apple',weight:7.1}, {asset:'MSFT',name:'Microsoft',weight:6.5}, {asset:'NVDA',name:'Nvidia',weight:5}],
                             'QQQ': [{asset:'AAPL',name:'Apple',weight:9.2}, {asset:'MSFT',name:'Microsoft',weight:8.8}, {asset:'NVDA',name:'Nvidia',weight:7.5}],
                             'VTI': [{asset:'AAPL',name:'Apple',weight:6.1}, {asset:'MSFT',name:'Microsoft',weight:5.5}, {asset:'NVDA',name:'Nvidia',weight:4.2}]
                         };
-                        holdings = major[symbol] || [{asset: symbol, name: name, weight: 100}];
+                        holdings = standard[symbol] || [{asset: symbol, name: name, weight: 100}];
                     }
 
                     const fundData = {
@@ -207,55 +205,58 @@
                     await setDoc(doc(db, 'users', state.userId, 'portfolio', docId), fundData);
                 };
 
-                window.updateAmount = async (id, val) => {
+                window.updateFundVal = async (id, val) => {
                     const amount = parseFloat(val) || 0;
                     await setDoc(doc(db, 'users', state.userId, 'portfolio', id), { amount }, { merge: true });
                 };
 
-                window.removeFund = async (id) => {
+                window.removeFundFromPortfolio = async (id) => {
                     await deleteDoc(doc(db, 'users', state.userId, 'portfolio', id));
                 };
 
             } catch (err) {
-                console.error("Init failed:", err);
+                console.error("Critical Start Error:", err);
             }
         }
 
         function debounce(f, t) { let timer; return (...a) => { clearTimeout(timer); timer = setTimeout(() => f.apply(this, a), t); }; }
 
         async function handleSearch(q) {
-            const resBox = document.getElementById('search-results');
+            const resultsBox = document.getElementById('search-results');
             const spinner = document.getElementById('search-spinner');
-            if (q.length < 2) { resBox.classList.add('hidden'); return; }
+            
+            if (q.length < 2) { 
+                resultsBox.classList.add('hidden'); 
+                return; 
+            }
+            
             spinner.classList.remove('hidden');
 
             try {
-                // Fetch from Financial Modeling Prep
-                const res = await fetch(`${FMP_URL}/search?query=${encodeURIComponent(q)}&limit=5&exchange=NASDAQ,NYSE,AMEX&apikey=${apiKey}`);
+                // Simplified search for stability
+                const res = await fetch(`${FMP_URL}/search?query=${encodeURIComponent(q)}&limit=6&apikey=${fmpApiKey}`);
                 const data = await res.json();
                 
-                // Render results list
                 if (Array.isArray(data) && data.length > 0) {
-                    resBox.innerHTML = data.map(i => `
-                        <button onclick="addFund('${i.symbol}', '${i.name.replace(/'/g, "\\'")}')" class="w-full text-left px-5 py-4 hover:bg-indigo-50 border-b flex justify-between items-center group transition-colors">
+                    resultsBox.innerHTML = data.map(item => `
+                        <button onclick="window.triggerAddFund('${item.symbol}', '${item.name.replace(/'/g, "\\'")}')" class="w-full text-left px-5 py-4 hover:bg-indigo-50 border-b last:border-0 flex justify-between items-center group transition-colors">
                             <div>
-                                <div class="font-bold text-indigo-600 group-hover:text-indigo-700">${i.symbol}</div>
-                                <div class="text-[10px] text-slate-400 font-bold uppercase truncate max-w-[200px]">${i.name}</div>
+                                <div class="font-bold text-indigo-600 group-hover:text-indigo-700">${item.symbol}</div>
+                                <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest truncate max-w-[200px]">${item.name}</div>
                             </div>
                             <i data-lucide="plus" class="w-4 h-4 text-slate-300 group-hover:text-indigo-600"></i>
                         </button>
                     `).join('');
+                    resultsBox.classList.remove('hidden');
                 } else {
-                    resBox.innerHTML = '<div class="p-5 text-xs italic text-slate-400">No matches found.</div>';
+                    resultsBox.innerHTML = '<div class="p-5 text-xs italic text-slate-400">No tickers found.</div>';
+                    resultsBox.classList.remove('hidden');
                 }
-                resBox.classList.remove('hidden');
-                lucide.createIcons();
             } catch (e) {
-                console.error("Search API Error", e);
-                resBox.innerHTML = '<div class="p-5 text-xs text-red-400 font-bold">Search unavailable. Check API key.</div>';
-                resBox.classList.remove('hidden');
+                console.error("Search failed", e);
             } finally {
                 spinner.classList.add('hidden');
+                lucide.createIcons(); // Refresh icons for the newly added buttons
             }
         }
 
@@ -267,14 +268,14 @@
                 state.funds = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 statusEl.innerHTML = `<i data-lucide="circle" class="w-2 h-2 fill-green-500 text-green-500 animate-pulse"></i> Cloud Synced`;
                 lucide.createIcons();
-                renderUI();
+                renderPortfolio();
             }, (err) => {
-                console.error("Sync Error:", err);
+                console.error("Firebase Rules Error:", err);
                 statusEl.innerHTML = `<i data-lucide="alert-circle" class="w-3 h-3 text-red-500"></i> Database Locked`;
             });
         }
 
-        function renderUI() {
+        function renderPortfolio() {
             const list = document.getElementById('funds-container');
             const dash = document.getElementById('dashboard');
             const empty = document.getElementById('empty-state');
@@ -285,16 +286,16 @@
 
             dash.classList.remove('hidden'); empty.classList.add('hidden');
             list.innerHTML = state.funds.map(f => `
-                <div class="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm transition-all hover:border-indigo-100 animate-in slide-in-from-left duration-300">
+                <div class="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-indigo-100 transition-all">
                     <div class="flex-1 min-w-[100px]">
                         <div class="font-bold text-slate-800">${f.symbol}</div>
                         <div class="text-[9px] text-slate-400 font-bold uppercase truncate">${f.name}</div>
                     </div>
                     <div class="bg-slate-50 border border-slate-200 rounded-xl px-2 py-1 flex items-center shadow-inner">
                         <span class="text-[10px] text-slate-400 mr-1 font-bold tracking-tight">$</span>
-                        <input type="number" value="${f.amount}" onchange="updateAmount('${f.id}', this.value)" class="w-16 outline-none font-bold text-sm bg-transparent">
+                        <input type="number" value="${f.amount}" onchange="window.updateFundVal('${f.id}', this.value)" class="w-16 outline-none font-bold text-sm bg-transparent">
                     </div>
-                    <button onclick="removeFund('${f.id}')" class="text-slate-300 hover:text-red-500 transition-colors p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    <button onclick="window.removeFundFromPortfolio('${f.id}')" class="text-slate-300 hover:text-red-500 transition-colors p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </div>
             `).join('');
             
@@ -305,19 +306,19 @@
         function calculateAnalytics() {
             const total = state.funds.reduce((a, f) => a + (f.amount || 0), 0);
             if (total === 0) return;
-            const stocks = {};
+            const stockMap = {};
             state.funds.forEach(f => f.holdings.forEach(h => {
-                const val = (f.amount || 0) * (h.weight || 0);
-                if (!stocks[h.ticker]) stocks[h.ticker] = { v: 0, n: h.name, f: [] };
-                stocks[h.ticker].v += val;
-                if (!stocks[h.ticker].f.includes(f.symbol)) stocks[h.ticker].f.push(f.symbol);
+                const dollarVal = (f.amount || 0) * (h.weight || 0);
+                if (!stockMap[h.ticker]) stockMap[h.ticker] = { v: 0, n: h.name, f: [] };
+                stockMap[h.ticker].v += dollarVal;
+                if (!stockMap[h.ticker].f.includes(f.symbol)) stockMap[h.ticker].f.push(f.symbol);
             }));
 
-            const sorted = Object.entries(stocks).map(([t, d]) => ({ t, ...d, p: (d.v / total) * 100 })).sort((a,b) => b.v - a.v);
+            const sorted = Object.entries(stockMap).map(([ticker, data]) => ({ ticker, ...data, percent: (data.v / total) * 100 })).sort((a,b) => b.v - a.v);
             document.getElementById('unique-count').innerText = sorted.length;
             document.getElementById('overlap-count').innerText = sorted.filter(s => s.f.length > 1).length;
             
-            const score = Math.round(Math.min(sorted.length * 1.5, 60) + Math.max(0, 40 - (sorted[0]?.p || 0)));
+            const score = Math.round(Math.min(sorted.length * 1.5, 60) + Math.max(0, 40 - (sorted[0]?.percent || 0)));
             document.getElementById('score-value').innerText = score;
             document.getElementById('score-bar').style.width = `${score}%`;
 
@@ -325,21 +326,22 @@
                 <tr class="hover:bg-slate-50/50 transition-colors">
                     <td class="px-6 py-4">
                         <div class="font-bold text-sm text-slate-800 flex items-center gap-2">
-                            ${s.t} ${s.f.length > 1 ? '<span class="overlap-badge">Overlap</span>' : ''}
+                            ${s.ticker} ${s.f.length > 1 ? '<span class="overlap-badge">Overlap</span>' : ''}
                         </div>
-                        <div class="text-[9px] text-slate-400 font-bold uppercase truncate max-w-[150px] tracking-tight">${s.name}</div>
+                        <div class="text-[9px] text-slate-400 font-bold uppercase truncate max-w-[150px] tracking-tight">${s.n}</div>
                     </td>
                     <td class="px-6 py-4 text-right">
                         <div class="text-[11px] font-bold text-slate-400 tracking-tighter">$${Math.round(s.v).toLocaleString()}</div>
                     </td>
-                    <td class="px-6 py-4 text-right font-black text-indigo-600 text-sm">${s.p.toFixed(2)}%</td>
+                    <td class="px-6 py-4 text-right font-black text-indigo-600 text-sm">${s.percent.toFixed(2)}%</td>
                     <td class="px-6 py-4 flex justify-end -space-x-1.5">
-                        ${s.f.map(n => `<div class="w-6 h-6 bg-white border border-slate-200 text-[8px] flex items-center justify-center rounded-full font-black shadow-sm ring-2 ring-white" title="Part of ${n}">${n[0]}</div>`).join('')}
+                        ${s.f.map(n => `<div class="w-6 h-6 bg-white border border-slate-200 text-[8px] flex items-center justify-center rounded-full font-black shadow-sm ring-2 ring-white" title="In ${n}">${n[0]}</div>`).join('')}
                     </td>
                 </tr>
             `).join('');
         }
 
+        // Run the initialization
         init();
     </script>
 </body>
