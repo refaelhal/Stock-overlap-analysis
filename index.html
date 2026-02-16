@@ -3,166 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OverlapPro | Smart Portfolio Diversification</title>
+    <title>OverlapPro | Smart Portfolio Analysis</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        /* High-Priority Search Results */
-        #search-results {
-            max-height: 400px;
-            overflow-y: auto;
-            z-index: 9999;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .overlap-badge { 
-            font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 4px; 
-            text-transform: uppercase; background: #fef3c7; color: #92400e; 
-        }
-
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        
-        .animate-slide-up {
-            animation: slideUp 0.4s ease-out forwards;
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .overlap-badge { font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; background: #fef3c7; color: #92400e; }
+        #search-results { z-index: 100; max-height: 40vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen">
 
     <div id="app" class="pb-24">
         <!-- Header -->
-        <header class="bg-white border-b sticky top-0 z-[100] px-4 py-4 shadow-sm">
+        <header class="bg-white border-b sticky top-0 z-50 px-4 py-4 shadow-sm">
             <div class="max-w-4xl mx-auto flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <div class="bg-indigo-600 p-2 rounded-xl text-white shadow-lg">
+                    <div class="bg-indigo-600 p-2 rounded-lg text-white shadow-lg">
                         <i data-lucide="layers" class="w-6 h-6"></i>
                     </div>
-                    <h1 class="text-xl font-black tracking-tighter">Overlap<span class="text-indigo-600">Pro</span></h1>
+                    <h1 class="text-xl font-extrabold tracking-tight">Overlap<span class="text-indigo-600">Pro</span></h1>
                 </div>
-                <div id="api-status" class="text-[9px] font-bold px-3 py-1 bg-slate-100 text-slate-400 rounded-full border flex items-center gap-1 uppercase tracking-tighter transition-all">
-                    <i data-lucide="circle" class="w-2 h-2 fill-slate-300"></i> API Standby
+                <div id="api-status" class="text-[10px] font-bold px-3 py-1 bg-slate-100 text-slate-500 rounded-full flex items-center gap-1 uppercase tracking-tighter border">
+                    Local Mode
                 </div>
             </div>
         </header>
 
         <main class="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
-            <!-- Search & Control -->
-            <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-200 relative overflow-visible">
+            <!-- Search & Input -->
+            <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 relative overflow-visible">
                 <div class="relative">
-                    <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300">
+                    <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                         <i data-lucide="search" class="w-5 h-5"></i>
                     </div>
                     <input 
-                        type="text" id="fund-search"
-                        autocomplete="off"
-                        placeholder="Search ETF or Stock (VOO, QQQ, AAPL...)"
-                        class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl pl-12 pr-12 py-4 focus:border-indigo-500 focus:bg-white transition-all outline-none text-lg font-semibold"
+                        type="text" id="search-input"
+                        placeholder="Search ETF (VOO, QQQ, VTI...)"
+                        class="w-full bg-slate-100 border-none rounded-2xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-indigo-500 transition-all outline-none text-lg font-medium"
                     >
                     <div id="search-spinner" class="hidden absolute right-4 top-1/2 -translate-y-1/2">
-                        <i data-lucide="refresh-cw" class="w-5 h-5 text-indigo-500 animate-spin"></i>
+                        <i data-lucide="refresh-cw" class="w-5 h-5 text-indigo-600 animate-spin"></i>
                     </div>
-                    
-                    <!-- Dropdown -->
-                    <div id="search-results" class="hidden absolute w-full left-0 mt-3 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden ring-1 ring-black ring-opacity-5">
-                        <!-- Results injected here -->
-                    </div>
+                    <div id="search-results" class="hidden absolute w-full left-0 mt-2 bg-white border border-slate-200 rounded-2xl overflow-hidden ring-1 ring-black ring-opacity-5"></div>
                 </div>
 
-                <!-- Portfolio List -->
-                <div id="funds-container" class="mt-6 space-y-3"></div>
+                <div id="fund-list" class="mt-6 space-y-3">
+                    <!-- Funds go here -->
+                </div>
             </section>
 
             <!-- Dashboard -->
-            <div id="dashboard" class="hidden space-y-6 animate-slide-up">
+            <div id="dashboard" class="hidden space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-indigo-600 p-6 rounded-[2.5rem] text-white shadow-xl shadow-indigo-100 border-b-4 border-indigo-800">
-                        <h3 class="text-[10px] font-black uppercase tracking-widest opacity-70 mb-2">Analysis Score</h3>
+                    <div class="bg-indigo-600 p-6 rounded-3xl text-white shadow-xl shadow-indigo-100">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest opacity-70 mb-2">Portfolio Quality</h3>
                         <div class="flex items-baseline gap-1">
-                            <span id="score-value" class="text-5xl font-black tracking-tighter">0</span>
+                            <span id="score-val" class="text-5xl font-black">0</span>
                             <span class="opacity-50 text-xl font-bold">/100</span>
                         </div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-200">
-                        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Unique Assets</h3>
-                        <div id="unique-count" class="text-4xl font-black text-slate-800 tracking-tighter">0</div>
-                        <p class="text-slate-400 text-[10px] mt-1 font-bold uppercase tracking-tight">Independent holdings</p>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+                        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Unique Stocks</h3>
+                        <div id="unique-val" class="text-4xl font-black text-slate-800">0</div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-200">
-                        <h3 class="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-2">High Overlap</h3>
-                        <div id="overlap-count" class="text-4xl font-black text-amber-500 tracking-tighter">0</div>
-                        <p class="text-slate-400 text-[10px] mt-1 font-bold uppercase tracking-tight">Shared across funds</p>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+                        <h3 class="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-2">Overlap Hits</h3>
+                        <div id="overlap-val" class="text-4xl font-black text-amber-500">0</div>
                     </div>
                 </div>
 
-                <!-- Exposure Table -->
-                <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="px-8 py-5 border-b bg-slate-50/50 flex justify-between items-center">
-                        <h3 class="font-bold text-slate-700">Detailed Exposure Breakdown</h3>
+                <!-- Rankings Table -->
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-slate-50/50 flex justify-between items-center">
+                        <h3 class="font-bold text-slate-700">Top Individual Exposures</h3>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
-                            <tbody id="holdings-table-body" class="divide-y divide-slate-100"></tbody>
+                            <tbody id="stocks-body" class="divide-y divide-slate-100"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
             <!-- Empty State -->
-            <div id="empty-state" class="text-center py-24 text-slate-300">
+            <div id="empty-state" class="text-center py-20 text-slate-300">
                 <i data-lucide="layout-grid" class="w-16 h-16 mx-auto mb-4 opacity-10"></i>
-                <p class="text-sm font-bold uppercase tracking-widest">Add assets to start analysis</p>
+                <p class="text-sm font-bold">Add index funds to analyze your actual exposure.</p>
             </div>
         </main>
     </div>
 
     <script>
-        /**
-         * REDESIGNED API ENGINE
-         */
-        const CONFIG = {
-            apiKey: "GwzlWCQ6lm5a6N6aHgAViWJYT2KN4ZNU", // PASTE YOUR NEW KEY HERE
-            baseUrl: "https://financialmodelingprep.com/api/v3"
-        };
+        // =========================================================
+        // 1. CONFIGURATION: ENTER YOUR API KEY BELOW
+        // =========================================================
+        const API_KEY = "d41G16jhROt3uPBg9qgOa1FEHMOUZIEB"; // Replace this with your FMP Key
+        const API_URL = "https://financialmodelingprep.com/api/v3";
 
+        // Global State (Persisted in LocalStorage)
         const state = {
-            portfolio: JSON.parse(localStorage.getItem('overlap_v4_data')) || []
+            funds: JSON.parse(localStorage.getItem('my_saved_portfolio')) || []
         };
 
         function init() {
             lucide.createIcons();
             
-            const input = document.getElementById('fund-search');
-            input.addEventListener('input', debounce((e) => searchTicker(e.target.value), 400));
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('input', debounce((e) => handleSearch(e.target.value), 400));
             
-            // Global click to close search results
+            // Close results when clicking outside
             document.addEventListener('click', (e) => {
-                const results = document.getElementById('search-results');
-                if (!e.target.closest('#fund-search') && !e.target.closest('#search-results')) {
-                    results.classList.add('hidden');
+                if (!e.target.closest('#search-input') && !e.target.closest('#search-results')) {
+                    document.getElementById('search-results').classList.add('hidden');
                 }
             });
 
-            render();
+            renderUI();
         }
 
-        // Robust Search with Error Detection
-        async function searchTicker(query) {
+        // Search logic
+        async function handleSearch(q) {
             const resultsBox = document.getElementById('search-results');
             const spinner = document.getElementById('search-spinner');
-            const status = document.getElementById('api-status');
             
-            if (query.length < 1) { 
+            if (q.length < 2) { 
                 resultsBox.classList.add('hidden'); 
                 return; 
             }
@@ -170,82 +139,61 @@
             spinner.classList.remove('hidden');
 
             try {
-                const url = `${CONFIG.baseUrl}/search?query=${encodeURIComponent(query)}&limit=6&apikey=${CONFIG.apiKey}`;
-                const res = await fetch(url);
-                const data = await res.json();
+                const response = await fetch(`${API_URL}/search?query=${encodeURIComponent(q)}&limit=6&apikey=${API_KEY}`);
+                const data = await response.json();
                 
-                // Detection of API limits/errors
-                if (data['Error Message'] || data['message']) {
-                    status.innerHTML = `<i data-lucide="alert-triangle" class="w-2 h-2 fill-red-500 text-red-500"></i> API Limit`;
-                    resultsBox.innerHTML = `<div class="p-6 text-xs text-red-500 font-bold">${data['Error Message'] || data['message']}</div>`;
-                    resultsBox.classList.remove('hidden');
-                    lucide.createIcons();
-                    return;
-                }
-
-                status.innerHTML = `<i data-lucide="circle" class="w-2 h-2 fill-green-500 text-green-500 animate-pulse"></i> API Active`;
-                lucide.createIcons();
-
                 if (Array.isArray(data) && data.length > 0) {
                     resultsBox.innerHTML = data.map(item => `
-                        <button onclick="window.addAsset('${item.symbol}', '${item.name.replace(/'/g, "\\'")}')" 
-                                class="w-full text-left px-6 py-5 hover:bg-indigo-50 border-b border-slate-50 last:border-0 flex justify-between items-center group transition-colors">
-                            <div class="flex-1">
-                                <div class="font-black text-indigo-600 group-hover:text-indigo-700 text-base">${item.symbol}</div>
-                                <div class="text-[10px] text-slate-400 font-bold uppercase truncate max-w-[200px] tracking-tight">${item.name}</div>
+                        <button onclick="window.addFund('${item.symbol}', '${item.name.replace(/'/g, "\\'")}')" 
+                                class="w-full text-left px-5 py-4 hover:bg-indigo-50 border-b last:border-0 flex justify-between items-center group transition-colors">
+                            <div>
+                                <div class="font-bold text-indigo-600 group-hover:text-indigo-700">${item.symbol}</div>
+                                <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest truncate max-w-[200px]">${item.name}</div>
                             </div>
-                            <div class="bg-indigo-50 p-2 rounded-full text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                                <i data-lucide="plus" class="w-4 h-4"></i>
-                            </div>
+                            <i data-lucide="plus" class="w-4 h-4 text-slate-300 group-hover:text-indigo-600"></i>
                         </button>
                     `).join('');
+                } else if (data['Error Message']) {
+                    resultsBox.innerHTML = `<div class="p-5 text-xs text-red-500 font-bold">API Limit: ${data['Error Message']}</div>`;
                 } else {
-                    resultsBox.innerHTML = '<div class="p-6 text-xs italic text-slate-400">No assets found. Try VOO or QQQ.</div>';
+                    resultsBox.innerHTML = '<div class="p-5 text-xs italic text-slate-400">No results found.</div>';
                 }
                 resultsBox.classList.remove('hidden');
                 lucide.createIcons();
-            } catch (err) {
-                console.error("Search failure", err);
-                resultsBox.innerHTML = '<div class="p-6 text-xs text-red-500">Connection error. Please try again.</div>';
-                resultsBox.classList.remove('hidden');
+            } catch (e) {
+                console.error("Search failed", e);
             } finally {
                 spinner.classList.add('hidden');
             }
         }
 
-        // Intelligent Asset Addition (Detects ETF vs Stock)
-        window.addAsset = async (symbol, name) => {
-            document.getElementById('fund-search').value = '';
+        // Add fund with fallback holdings
+        window.addFund = async (symbol, name) => {
+            document.getElementById('search-input').value = '';
             document.getElementById('search-results').classList.add('hidden');
             
             let holdings = [];
             try {
-                // Attempt to get ETF holdings
-                const res = await fetch(`${CONFIG.baseUrl}/etf-holder/${symbol.toUpperCase()}?apikey=${CONFIG.apiKey}`);
+                const res = await fetch(`${API_URL}/etf-holder/${symbol}?apikey=${API_KEY}`);
                 holdings = await res.json();
-            } catch (e) { console.warn("Holdings fetch skipped."); }
-
-            // Logic: If no holdings returned, treat as a single stock (100% weight)
-            if (!Array.isArray(holdings) || holdings.length === 0) {
-                // Common ETF fallbacks for free users or broken API endpoints
-                const fallbacks = {
-                    'VOO': [{t:'AAPL',n:'Apple Inc.',w:7.1}, {t:'MSFT',n:'Microsoft Corp.',w:6.5}, {t:'NVDA',n:'NVIDIA Corp.',w:5.0}],
-                    'QQQ': [{t:'AAPL',n:'Apple Inc.',w:9.2}, {t:'MSFT',n:'Microsoft Corp.',w:8.8}, {t:'NVDA',n:'NVIDIA Corp.',w:7.5}],
-                    'VTI': [{t:'AAPL',n:'Apple Inc.',w:6.1}, {t:'MSFT',n:'Microsoft Corp.',w:5.5}]
-                };
-                
-                const upSym = symbol.toUpperCase();
-                holdings = (fallbacks[upSym] || [{t:upSym, n:name, w:100}]).map(h => ({
-                    asset: h.t || h.asset,
-                    name: h.n || h.name,
-                    weight: h.w || h.weight
-                }));
+            } catch (e) {
+                console.error("Holdings fetch failed", e);
             }
 
-            const asset = {
+            // If API returns empty (stock or limit reached), use fallback or treat as single asset
+            if (!Array.isArray(holdings) || holdings.length === 0) {
+                const library = {
+                    'VOO': [{t:'AAPL',n:'Apple',w:7.1}, {t:'MSFT',n:'Microsoft',w:6.5}, {t:'NVDA',n:'Nvidia',w:5.0}],
+                    'QQQ': [{t:'AAPL',n:'Apple',w:9.2}, {t:'MSFT',n:'Microsoft',w:8.8}, {t:'NVDA',n:'Nvidia',w:7.5}],
+                    'VTI': [{t:'AAPL',n:'Apple',w:6.1}, {t:'MSFT',n:'Microsoft',w:5.5}, {t:'NVDA',n:'Nvidia',w:4.2}]
+                };
+                holdings = (library[symbol.toUpperCase()] || [{t:symbol,n:name,w:100}]).map(h => ({ asset: h.t||h.asset, name: h.n||h.name, weight: h.w||h.weight }));
+            }
+
+            const fundData = {
                 id: Date.now(),
-                symbol: symbol.toUpperCase(),
-                name: name,
+                symbol,
+                name,
                 amount: 1000,
                 holdings: holdings.map(h => ({
                     ticker: h.asset || h.symbol || h.t,
@@ -254,128 +202,117 @@
                 }))
             };
 
-            state.portfolio.push(asset);
+            state.funds.push(fundData);
             save();
-            render();
+            renderUI();
         };
 
-        window.removeAsset = (id) => {
-            state.portfolio = state.portfolio.filter(a => a.id !== id);
+        window.removeFund = (id) => {
+            state.funds = state.funds.filter(f => f.id !== id);
             save();
-            render();
+            renderUI();
         };
 
-        window.updateVal = (id, val) => {
-            const asset = state.portfolio.find(a => a.id === id);
-            if (asset) {
-                asset.amount = Math.max(0, parseFloat(val) || 0);
+        window.updateAmount = (id, val) => {
+            const fund = state.funds.find(f => f.id === id);
+            if (fund) {
+                fund.amount = parseFloat(val) || 0;
                 save();
-                render();
+                renderUI();
             }
         };
 
         function save() {
-            localStorage.setItem('overlap_v4_data', JSON.stringify(state.portfolio));
+            localStorage.setItem('my_saved_portfolio', JSON.stringify(state.funds));
         }
 
-        // Logic Rendering
-        function render() {
-            const container = document.getElementById('funds-container');
-            const dashboard = document.getElementById('dashboard');
+        function renderUI() {
+            const list = document.getElementById('fund-list');
+            const dash = document.getElementById('dashboard');
             const empty = document.getElementById('empty-state');
-            
-            if (state.portfolio.length === 0) {
-                dashboard.classList.add('hidden');
+
+            if (state.funds.length === 0) {
+                dash.classList.add('hidden');
                 empty.classList.remove('hidden');
-                container.innerHTML = '';
+                list.innerHTML = '';
                 return;
             }
 
-            dashboard.classList.remove('hidden');
+            dash.classList.remove('hidden');
             empty.classList.add('hidden');
 
-            container.innerHTML = state.portfolio.map(item => `
-                <div class="flex items-center gap-4 p-5 bg-white border border-slate-200 rounded-3xl shadow-sm hover:border-indigo-100 transition-all">
-                    <div class="flex-1 min-w-[100px]">
-                        <div class="font-black text-slate-800 text-lg leading-tight">${item.symbol}</div>
-                        <div class="text-[9px] text-slate-400 font-bold uppercase truncate max-w-[150px] tracking-tight">${item.name}</div>
+            list.innerHTML = state.funds.map(f => `
+                <div class="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-indigo-100 transition-all">
+                    <div class="flex-1">
+                        <div class="font-bold text-slate-800">${f.symbol}</div>
+                        <div class="text-[9px] text-slate-400 font-bold uppercase truncate max-w-[120px]">${f.name}</div>
                     </div>
-                    <div class="bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2 flex items-center shadow-inner">
-                        <span class="text-xs text-slate-400 mr-2 font-black">$</span>
-                        <input type="number" value="${item.amount}" onchange="window.updateVal(${item.id}, this.value)" 
-                               class="w-24 outline-none font-black text-slate-700 text-sm bg-transparent">
+                    <div class="bg-slate-50 border rounded-xl px-2 py-1 flex items-center shadow-inner">
+                        <span class="text-xs text-slate-300 mr-1">$</span>
+                        <input type="number" value="${f.amount}" onchange="window.updateAmount(${f.id}, this.value)" class="w-20 outline-none font-bold text-sm bg-transparent">
                     </div>
-                    <button onclick="window.removeAsset(${item.id})" class="text-slate-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition-all">
-                        <i data-lucide="trash-2" class="w-5 h-5"></i>
+                    <button onclick="window.removeFund(${f.id})" class="text-slate-300 hover:text-red-500 p-1">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
                     </button>
                 </div>
             `).join('');
-            
+
             calculate();
             lucide.createIcons();
         }
 
-        // Calculation Hub
         function calculate() {
-            const total = state.portfolio.reduce((acc, a) => acc + a.amount, 0);
+            const total = state.funds.reduce((a, f) => a + (f.amount || 0), 0);
             if (total === 0) return;
-            
             const stockMap = {};
             
-            state.portfolio.forEach(asset => {
-                asset.holdings.forEach(hold => {
-                    const exposure = asset.amount * hold.weight;
-                    if (!stockMap[hold.ticker]) {
-                        stockMap[hold.ticker] = { v: 0, n: hold.name, sources: [] };
+            state.funds.forEach(f => {
+                f.holdings.forEach(h => {
+                    const dollarVal = (f.amount || 0) * (h.weight || 0);
+                    if (!stockMap[h.ticker]) {
+                        stockMap[h.ticker] = { v: 0, n: h.name, f: [] };
                     }
-                    stockMap[hold.ticker].v += exposure;
-                    if (!stockMap[hold.ticker].sources.includes(asset.symbol)) {
-                        stockMap[hold.ticker].sources.push(asset.symbol);
+                    stockMap[h.ticker].v += dollarVal;
+                    if (!stockMap[h.ticker].f.includes(f.symbol)) {
+                        stockMap[h.ticker].f.push(f.symbol);
                     }
                 });
             });
 
             const sorted = Object.entries(stockMap)
-                .map(([ticker, d]) => ({ ticker, ...d, p: (d.v / total) * 100 }))
-                .sort((a, b) => b.v - a.v);
+                .map(([ticker, data]) => ({ ticker, ...data, percent: (data.v / total) * 100 }))
+                .sort((a,b) => b.v - a.v);
 
-            document.getElementById('unique-count').innerText = sorted.length;
-            document.getElementById('overlap-count').innerText = sorted.filter(s => s.sources.length > 1).length;
+            document.getElementById('unique-val').innerText = sorted.length;
+            document.getElementById('overlap-val').innerText = sorted.filter(s => s.f.length > 1).length;
             
-            const score = Math.round(Math.min(sorted.length * 1.8, 65) + Math.max(0, 35 - (sorted[0]?.p || 0)));
-            document.getElementById('score-value').innerText = score;
-            
-            document.getElementById('holdings-table-body').innerHTML = sorted.slice(0, 15).map(s => `
+            // Score based on diversity and concentration
+            const score = Math.round(Math.min(sorted.length * 1.5, 60) + Math.max(0, 40 - (sorted[0]?.percent || 0)));
+            document.getElementById('score-val').innerText = score;
+
+            document.getElementById('stocks-body').innerHTML = sorted.slice(0, 15).map(s => `
                 <tr class="hover:bg-slate-50/50 transition-colors">
-                    <td class="px-8 py-5">
-                        <div class="flex items-center gap-2 font-black text-slate-800 text-sm">
-                            ${s.ticker} 
-                            ${s.sources.length > 1 ? '<span class="overlap-badge">Hit</span>' : ''}
+                    <td class="px-6 py-4">
+                        <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            ${s.ticker} ${s.f.length > 1 ? '<span class="overlap-badge">Overlap</span>' : ''}
                         </div>
-                        <div class="text-[9px] text-slate-400 font-bold uppercase truncate max-w-[200px] tracking-tight">${s.n}</div>
+                        <div class="text-[9px] text-slate-400 font-bold uppercase truncate max-w-[150px]">${s.n}</div>
                     </td>
-                    <td class="px-8 py-5 text-right font-black text-indigo-600 text-sm">${s.p.toFixed(2)}%</td>
-                    <td class="px-8 py-5">
+                    <td class="px-6 py-4 text-right">
+                        <div class="text-sm font-black text-indigo-600">${s.percent.toFixed(2)}%</div>
+                        <div class="text-[9px] text-slate-400 font-bold">$${Math.round(s.v).toLocaleString()}</div>
+                    </td>
+                    <td class="px-6 py-4">
                         <div class="flex justify-end -space-x-1.5">
-                            ${s.sources.map(sym => `
-                                <div class="w-6 h-6 rounded-full bg-white border border-slate-200 text-[8px] flex items-center justify-center font-black shadow-sm ring-2 ring-white" title="${sym}">
-                                    ${sym[0]}
-                                </div>
-                            `).join('')}
+                            ${s.f.map(f => `<div class="w-6 h-6 bg-white border border-slate-200 text-[8px] flex items-center justify-center rounded-full font-black shadow-sm ring-2 ring-white" title="${f}">${f[0]}</div>`).join('')}
                         </div>
                     </td>
                 </tr>
             `).join('');
         }
 
-        function debounce(f, t) {
-            let timer;
-            return (...args) => {
-                clearTimeout(timer);
-                timer = setTimeout(() => f.apply(this, args), t);
-            };
-        }
-
+        function debounce(f, t) { let timer; return (...a) => { clearTimeout(timer); timer = setTimeout(() => f.apply(this, a), t); }; }
+        
         init();
     </script>
 </body>
