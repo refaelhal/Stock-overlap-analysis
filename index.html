@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OverlapPro | Portfolio Analysis</title>
+    <title>OverlapPro | Portfolio Diversification Analysis</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -35,8 +35,10 @@
                     </div>
                     <h1 class="text-xl font-extrabold tracking-tight">Overlap<span class="text-indigo-600">Pro</span></h1>
                 </div>
-                <div class="text-[10px] font-bold px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full uppercase tracking-widest border border-indigo-100">
-                    Local Session
+                <div class="flex items-center gap-2">
+                    <div class="text-[10px] font-bold px-3 py-1 bg-slate-100 text-slate-500 rounded-full uppercase tracking-widest border border-slate-200">
+                        Local Storage Active
+                    </div>
                 </div>
             </div>
         </header>
@@ -44,7 +46,7 @@
         <main class="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
             <!-- Search Section -->
             <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 relative overflow-visible">
-                <h2 class="text-sm font-bold mb-4 flex items-center gap-2 text-slate-500 uppercase tracking-widest">
+                <h2 class="text-sm font-bold mb-4 flex items-center gap-2 text-slate-400 uppercase tracking-widest">
                     Add Index Funds
                 </h2>
                 <div class="relative">
@@ -53,7 +55,7 @@
                             type="text" id="fund-search"
                             autocomplete="off"
                             placeholder="Type an ETF ticker (VOO, QQQ, VTI...)"
-                            class="w-full bg-slate-100 border-none rounded-2xl pl-4 pr-12 py-4 focus:ring-2 focus:ring-indigo-500 transition-all outline-none text-lg font-medium shadow-inner"
+                            class="w-full bg-slate-50 border-none rounded-2xl pl-4 pr-12 py-4 focus:ring-2 focus:ring-indigo-500 transition-all outline-none text-lg font-medium shadow-inner"
                         >
                         <div id="search-spinner" class="hidden absolute right-4 top-1/2 -translate-y-1/2">
                             <i data-lucide="refresh-cw" class="w-5 h-5 text-indigo-500 animate-spin"></i>
@@ -62,32 +64,37 @@
                     <!-- Dropdown Results -->
                     <div id="search-results" class="hidden absolute w-full left-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden"></div>
                 </div>
+
+                <!-- Added Funds -->
                 <div id="funds-container" class="mt-6 space-y-3"></div>
             </section>
 
-            <!-- Dashboard Statistics -->
-            <div id="dashboard" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in duration-700">
-                <div class="bg-indigo-600 p-6 rounded-3xl text-white shadow-xl shadow-indigo-100">
-                    <h3 class="text-[10px] font-black uppercase tracking-widest opacity-70 mb-2">Diversification Score</h3>
-                    <div class="flex items-baseline gap-1">
-                        <span id="score-value" class="text-5xl font-black">0</span>
-                        <span class="opacity-50 text-xl font-bold">/100</span>
+            <!-- Dashboard -->
+            <div id="dashboard" class="hidden space-y-6 animate-in fade-in duration-700">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-indigo-600 p-6 rounded-3xl text-white shadow-xl shadow-indigo-100">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest opacity-70 mb-2">Diversification Score</h3>
+                        <div class="flex items-baseline gap-1">
+                            <span id="score-value" class="text-5xl font-black">0</span>
+                            <span class="opacity-50 text-xl font-bold">/100</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+                        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Unique Stocks</h3>
+                        <div id="unique-count" class="text-4xl font-black text-slate-800">0</div>
+                        <p class="text-slate-400 text-[10px] mt-1 font-bold italic uppercase">Independent holdings</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+                        <h3 class="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-2">Overlap Hits</h3>
+                        <div id="overlap-count" class="text-4xl font-black text-amber-500">0</div>
+                        <p class="text-slate-400 text-[10px] mt-1 font-bold italic uppercase tracking-tighter">Shared across funds</p>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
-                    <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Unique Stocks</h3>
-                    <div id="unique-count" class="text-4xl font-black text-slate-800">0</div>
-                    <p class="text-slate-400 text-[10px] mt-1 font-bold italic uppercase">Independent holdings</p>
-                </div>
-
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
-                    <h3 class="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-2">Overlap Hits</h3>
-                    <div id="overlap-count" class="text-4xl font-black text-amber-500">0</div>
-                    <p class="text-slate-400 text-[10px] mt-1 font-bold italic uppercase tracking-tighter">Shared across funds</p>
-                </div>
-
-                <div class="md:col-span-3 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <!-- Rankings -->
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="px-6 py-4 border-b bg-slate-50/50">
                         <h3 class="font-bold text-slate-700 text-sm">Portfolio Breakdown</h3>
                     </div>
@@ -101,17 +108,17 @@
 
             <!-- Empty State -->
             <div id="empty-state" class="text-center py-20 text-slate-300 font-bold uppercase tracking-widest text-xs">
-                <i data-lucide="search" class="w-12 h-12 mx-auto mb-4 opacity-10 text-indigo-600"></i>
+                <i data-lucide="info" class="w-12 h-12 mx-auto mb-4 opacity-10"></i>
                 <p>Search and add funds to begin analysis.</p>
             </div>
         </main>
     </div>
 
     <script>
-        // App Logic
+        // Store everything locally in the browser
         const state = {
-            funds: [], // Store funds locally in memory
-            apiKey: "GwzlWCQ6lm5a6N6aHgAViWJYT2KN4ZNU", // Your FMP Key
+            funds: JSON.parse(localStorage.getItem('my_portfolio_funds')) || [],
+            apiKey: "GwzlWCQ6lm5a6N6aHgAViWJYT2KN4ZNU",
             apiUrl: "https://financialmodelingprep.com/api/v3"
         };
 
@@ -121,7 +128,7 @@
             const searchInput = document.getElementById('fund-search');
             searchInput.addEventListener('input', debounce((e) => handleSearch(e.target.value), 300));
             
-            // Close search dropdown when clicking away
+            // Close dropdown if clicking elsewhere
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('#fund-search') && !e.target.closest('#search-results')) {
                     document.getElementById('search-results').classList.add('hidden');
@@ -131,7 +138,6 @@
             renderUI();
         }
 
-        // Search logic
         async function handleSearch(query) {
             const resultsBox = document.getElementById('search-results');
             const spinner = document.getElementById('search-spinner');
@@ -158,18 +164,18 @@
                         </button>
                     `).join('');
                 } else {
-                    resultsBox.innerHTML = '<div class="p-5 text-xs italic text-slate-400">No tickers found.</div>';
+                    resultsBox.innerHTML = '<div class="p-5 text-xs italic text-slate-400">No matching funds found.</div>';
                 }
                 resultsBox.classList.remove('hidden');
             } catch (e) {
-                console.error("Search API Error", e);
+                console.error("Search Error", e);
+                resultsBox.innerHTML = '<div class="p-5 text-xs text-red-400">API connection error.</div>';
             } finally {
                 spinner.classList.add('hidden');
                 lucide.createIcons();
             }
         }
 
-        // Add a fund to the list
         async function addFund(symbol, name) {
             document.getElementById('fund-search').value = '';
             document.getElementById('search-results').classList.add('hidden');
@@ -178,18 +184,16 @@
             try {
                 const res = await fetch(`${state.apiUrl}/etf-holder/${symbol}?apikey=${state.apiKey}`);
                 holdings = await res.json();
-            } catch (e) {
-                console.error("API Error:", e);
-            }
+            } catch (e) {}
 
-            // Fallback data for common funds if API is limited
+            // Static fallbacks for popular tickers if API limit is reached
             if (!Array.isArray(holdings) || holdings.length === 0) {
                 const standard = {
                     'VOO': [{t:'AAPL',n:'Apple',w:7.1}, {t:'MSFT',n:'Microsoft',w:6.5}, {t:'NVDA',n:'Nvidia',w:5.0}],
-                    'QQQ': [{asset:'AAPL',name:'Apple',weight:9.2}, {asset:'MSFT',name:'Microsoft',weight:8.8}, {asset:'NVDA',name:'Nvidia',weight:7.5}],
-                    'VTI': [{asset:'AAPL',name:'Apple',weight:6.1}, {asset:'MSFT',name:'Microsoft',weight:5.5}, {asset:'NVDA',name:'Nvidia',weight:4.2}]
+                    'QQQ': [{t:'AAPL',n:'Apple',w:9.2}, {t:'MSFT',n:'Microsoft',w:8.8}, {t:'NVDA',n:'Nvidia',w:7.5}],
+                    'VTI': [{t:'AAPL',n:'Apple',w:6.1}, {t:'MSFT',n:'Microsoft',w:5.5}, {t:'NVDA',n:'Nvidia',w:4.2}]
                 };
-                holdings = standard[symbol] || [{asset: symbol, name: name, weight: 100}];
+                holdings = (standard[symbol] || [{t:symbol,n:name,w:100}]).map(h => ({ asset: h.t||h.asset, name: h.n||h.name, weight: h.w||h.weight }));
             }
 
             const fundData = {
@@ -205,25 +209,29 @@
             };
 
             state.funds.push(fundData);
+            save();
             renderUI();
         }
 
-        // Update amount for a specific fund
+        function removeFund(id) {
+            state.funds = state.funds.filter(f => f.id !== id);
+            save();
+            renderUI();
+        }
+
         function updateAmount(id, val) {
             const fund = state.funds.find(f => f.id === id);
             if (fund) {
                 fund.amount = parseFloat(val) || 0;
+                save();
                 renderUI();
             }
         }
 
-        // Remove fund from list
-        function removeFund(id) {
-            state.funds = state.funds.filter(f => f.id !== id);
-            renderUI();
+        function save() {
+            localStorage.setItem('my_portfolio_funds', JSON.stringify(state.funds));
         }
 
-        // Build the Interface
         function renderUI() {
             const list = document.getElementById('funds-container');
             const dash = document.getElementById('dashboard');
@@ -257,7 +265,6 @@
             lucide.createIcons();
         }
 
-        // Analysis Logic
         function calculateAnalytics() {
             const total = state.funds.reduce((a, f) => a + (f.amount || 0), 0);
             if (total === 0) return;
@@ -283,6 +290,7 @@
             document.getElementById('unique-count').innerText = sorted.length;
             document.getElementById('overlap-count').innerText = sorted.filter(s => s.f.length > 1).length;
             
+            // Score logic based on concentration and unique count
             const score = Math.round(Math.min(sorted.length * 1.5, 60) + Math.max(0, 40 - (sorted[0]?.percent || 0)));
             document.getElementById('score-value').innerText = score;
             
@@ -296,7 +304,7 @@
                     </td>
                     <td class="px-6 py-4 text-right font-black text-indigo-600 text-sm">${s.percent.toFixed(2)}%</td>
                     <td class="px-6 py-4 flex justify-end -space-x-1.5">
-                        ${s.f.map(n => `<div class="w-6 h-6 bg-white border border-slate-200 text-[8px] flex items-center justify-center rounded-full font-black shadow-sm ring-2 ring-white" title="In ${n}">${n[0]}</div>`).join('')}
+                        ${s.f.map(n => `<div class="w-6 h-6 bg-white border border-slate-200 text-[8px] flex items-center justify-center rounded-full font-black shadow-sm ring-2 ring-white" title="Found in ${n}">${n[0]}</div>`).join('')}
                     </td>
                 </tr>
             `).join('');
@@ -305,7 +313,7 @@
         // Utils
         function debounce(f, t) { let timer; return (...a) => { clearTimeout(timer); timer = setTimeout(() => f.apply(this, a), t); }; }
 
-        // Start
+        // Start App
         init();
     </script>
 </body>
